@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}SentinelShield | Incident #{{ alert_id }}{% endblock %}
+
+{% block content %}
+
+{% if alert %}
+
+<div class="incident-page">
+
+    <!-- ================================================================
+         HEADER
+         ================================================================ -->
+
+    <div class="incident-header">
+
+        <div>
+
+            <a href="{{ url_for('dashboard.alerts_list') }}" class="back-alerts">
+                ← BACK TO ALERTS
+            </a>
+
+            <div class="incident-eyebrow">
+                SENTINELSHIELD / SECURITY INCIDENT
+            </div>
+
+            <div class="incident-title-row">
+                <h1>{{ alert["event_type"] }}</h1>
+                <span class="incident-severity severity-{{ alert["severity"]|lower }}">
+                    {{ alert["severity"] }}
+                </span>
+            </div>
+
+            <p class="incident-subtitle">
+                Incident #{{ alert["id"] }} · Detected {{ alert["timestamp"] }}
+            </p>
+
+        </div>
+
+        <div class="incident-header-right">
+            <span class="incident-status-label">CURRENT STATUS</span>
+            <span class="detail-status status-{{ alert["status"]|lower }}">
+                {{ alert["status"] }}
+            </span>
+        </div>
+
+    </div>
+
+    <!-- ================================================================
+         INCIDENT WORKFLOW
+         ================================================================ -->
+
+    <section class="workflow-card">
+
+        <div class="workflow-header">
+            <h2>Incident Lifecycle</h2>
+            <span class="workflow-id">ALERT #{{ alert["id"] }}</span>
+        </div>
+
+        <div class="workflow">
+
+            <div class="workflow-step {% if workflow.new %}workflow-complete{% endif %} {% if alert['status'] == 'NEW' %}workflow-active{% endif %}">
+                <div class="workflow-number">01</div>
+                <div><strong>NEW</strong><span>Detection received</span></div>
+            </div>
+
+            <div class="workflow-line"></div>
+
+            <div class="workflow-step {% if workflow.acknowledged %}workflow-complete{% endif %} {% if alert['status'] == 'ACKNOWLEDGED' %}workflow-active{% endif %}">
+                <div class="workflow-number">02</div>
+                <div><strong>ACKNOWLEDGED</strong><span>Analyst accepted</span></div>
+            </div>
+
+            <div class="workflow-line"></div>
+
+            <div class="workflow-step {% if workflow.investigating %}workflow-complete{% endif %} {% if alert['status'] == 'INVESTIGATING' %}workflow-active{% endif %}">
+                <div class="workflow-number">03</div>
+                <div><strong>INVESTIGATING</strong><span>Analysis in progress</span></div>
+            </div>
+
+            <div class="workflow-line"></div>
+
+            <div class="workflow-step {% if workflow.resolved %}workflow-complete{% endif %} {% if alert['status'] == 'RESOLVED' %}workflow-active{% endif %}">
+                <div class="workflow-number">04</div>
+                <div><strong>RESOLVED</strong><span>Incident closed</span></div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         MAIN INCIDENT GRID
+         ================================================================ -->
+
+    <div class="incident-grid">
+
+        <!-- MAIN CONTENT -->
+        <main class="incident-main">
+
+            <!-- INCIDENT OVERVIEW -->
+            <section class="incident-card">
+
+                <div class="card-heading">
+                    <h2>Incident Overview</h2>
+                    <span class="card-id">ID {{ alert["id"] }}</span>
+                </div>
+
+                <div class="overview-grid">
+
+                    <div class="info-block">
+                        <span class="info-label">SOURCE IP</span>
+                        <code>{{ alert["source_ip"] or "N/A" }}</code>
+                    </div>
+
+                    <div class="info-block">
+                        <span class="info-label">DESTINATION IP</span>
+                        <code>{{ alert["destination_ip"] or "N/A" }}</code>
+                    </div>
+
+                    <div class="info-block">
+                        <span class="info-label">CONFIDENCE</span>
+                        <strong>{{ alert["confidence"] }}%</strong>
+                    </div>
+
+                    <div class="info-block">
+                        <span class="info-label">DETECTION ENGINE</span>
+                        <strong>{{ alert["engine"] }}</strong>
+                    </div>
+
+                    <div class="info-block">
+                        <span class="info-label">EVENT TYPE</span>
+                        <strong>{{ alert["event_type"] }}</strong>
+                    </div>
+
+                    <div class="info-block">
+                        <span class="info-label">DETECTED AT</span>
+                        <span class="mono-text">{{ alert["timestamp"] }}</span>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- RISK ASSESSMENT -->
+            <section class="incident-card">
+
+                <div class="card-heading">
+                    <h2>Risk Assessment</h2>
+                    <span class="risk-score-large">{{ risk_score }}/100</span>
+                </div>
+
+                <div class="risk-meter-track">
+                    <div class="risk-meter-fill" style="width: {{ risk_score }}%;"></div>
+                </div>
+
+                <div class="risk-scale">
+                    <span>LOW</span>
+                    <span>MEDIUM</span>
+                    <span>HIGH</span>
+                    <span>CRITICAL</span>
+                </div>
+
+                <p class="risk-explanation">
+                    SentinelShield calculated this risk score using detection type, confidence and observed security characteristics. Higher scores indicate greater potential impact and urgency.
+                </p>
+
+            </section>
+
+            <!-- DETECTION EXPLANATION -->
+            <section class="incident-card">
+
+                <div class="card-heading">
+                    <h2>Detection Explanation</h2>
+                </div>
+
+                <div class="description-box">
+                    {{ alert["description"] or "No detection explanation was recorded." }}
+                </div>
+
+            </section>
+
+            <!-- EVIDENCE -->
+            <section class="incident-card">
+
+                <div class="card-heading">
+                    <h2>Detection Evidence</h2>
+                </div>
+
+                {% if alert["evidence"] %}
+                <div class="evidence-box">
+                    <pre>{{ alert["evidence"] }}</pre>
+                </div>
+                {% else %}
+                <div class="empty-evidence">
+                    No additional evidence recorded.
+                </div>
+                {% endif %}
+
+            </section>
+
+            <!-- RELATED EVENTS -->
+            <section class="incident-card">
+
+                <div class="card-heading">
+                    <h2>Related Events</h2>
+                    <span class="card-id">{{ related_events|length }} CORRELATED</span>
+                </div>
+
+                {% if related_events %}
+
+                <div class="event-list">
+
+                    {% for event in related_events %}
+
+                    <div class="related-event">
+
+                        <div class="related-event-marker"></div>
+
+                        <div class="related-event-content">
+
+                            <div class="related-event-top">
+                                <strong>{{ event["event_type"] }}</strong>
+                                <span>{{ event["timestamp"] }}</span>
+                            </div>
+
+                            <div class="related-event-bottom">
+                                <code>{{ event["source_ip"] or "N/A" }}</code>
+                                <span>→</span>
+                                <code>{{ event["destination_ip"] or "N/A" }}</code>
+                                {% if event["destination_port"] %}
+                                <span>:{{ event["destination_port"] }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if event["description"] %}
+                            <div class="event-description">
+                                {{ event["description"] }}
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="empty-events">
+                    No related events were found for this incident.
+                </div>
+
+                {% endif %}
+
+            </section>
+
+        </main>
+
+        <!-- SIDEBAR -->
+        <aside class="incident-sidebar">
+
+            <!-- RISK PRIORITY -->
+            <section class="sidebar-card risk-summary">
+
+                <span class="section-kicker">RISK PRIORITY</span>
+
+                <div class="priority-score">{{ risk_score }}</div>
+
+                <div class="priority-label">RISK SCORE / 100</div>
+
+                <span class="priority-severity severity-{{ alert["severity"]|lower }}">
+                    {{ alert["severity"] }} PRIORITY
+                </span>
+
+            </section>
+
+            <!-- RESPONSE ACTIONS -->
+            <section class="sidebar-card">
+
+                <h2>Response Actions</h2>
+
+                <div class="action-stack">
+
+                    {% if alert["status"] == "NEW" %}
+
+                    <button class="primary-action" onclick="changeStatus('ACKNOWLEDGED')">
+                        ACKNOWLEDGE ALERT
+                    </button>
+
+                    {% elif alert["status"] == "ACKNOWLEDGED" %}
+
+                    <button class="primary-action" onclick="changeStatus('INVESTIGATING')">
+                        START INVESTIGATION
+                    </button>
+
+                    {% elif alert["status"] == "INVESTIGATING" %}
+
+                    <button class="resolve-action" onclick="changeStatus('RESOLVED')">
+                        MARK AS RESOLVED
+                    </button>
+
+                    {% elif alert["status"] == "RESOLVED" %}
+
+                    <div class="resolved-message">
+                        INCIDENT RESOLVED
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+            </section>
+
+            <!-- RECOMMENDED ACTION -->
+            <section class="sidebar-card">
+
+                <h2>Recommended Action</h2>
+
+                <div class="recommendation-box">
+                    {{ alert["recommended_action"] or "Review the detection evidence, validate the source, investigate correlated activity, and determine whether additional containment is required." }}
+                </div>
+
+            </section>
+
+            <!-- METADATA -->
+            <section class="sidebar-card">
+
+                <h2>Incident Metadata</h2>
+
+                <div class="metadata-list">
+
+                    <div>
+                        <span>Alert ID</span>
+                        <strong>#{{ alert["id"] }}</strong>
+                    </div>
+
+                    <div>
+                        <span>Status</span>
+                        <strong>{{ alert["status"] }}</strong>
+                    </div>
+
+                    <div>
+                        <span>Severity</span>
+                        <strong>{{ alert["severity"] }}</strong>
+                    </div>
+
+                    <div>
+                        <span>Confidence</span>
+                        <strong>{{ alert["confidence"] }}%</strong>
+                    </div>
+
+                    <div>
+                        <span>Engine</span>
+                        <strong>{{ alert["engine"] }}</strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+</div>
+
+<script>
+
+async function changeStatus(newStatus) {
+    const button = event.currentTarget;
+    const originalText = button.innerText;
+    button.disabled = true;
+    button.innerText = "UPDATING...";
+
+    try {
+        const response = await fetch("{{ url_for('dashboard.update_alert_status_api', alert_id=alert_id) }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            throw new Error(data.error || "Unable to update alert.");
+        }
+
+        window.location.reload();
+
+    } catch (error) {
+        alert("Status update failed: " + error.message);
+        button.disabled = false;
+        button.innerText = originalText;
+    }
+}
+
+</script>
+
+{% else %}
+
+<!-- ALERT NOT FOUND -->
+
+<div class="incident-not-found">
+
+    <div class="not-found-icon">!</div>
+
+    <h1>Alert Not Found</h1>
+
+    <p>
+        SentinelShield could not find incident #{{ alert_id }} in the SQLite database.
+    </p>
+
+    <a href="{{ url_for('dashboard.alerts_list') }}" class="btn btn-primary">
+        RETURN TO ALERTS
+    </a>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

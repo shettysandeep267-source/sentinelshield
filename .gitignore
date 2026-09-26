@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# SentinelShield runtime data - do not commit real captured data
+database/*.db
+logs/*.log
+logs/*
+
+# Local config overrides
+config/config.local.yaml
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

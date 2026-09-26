@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Network Monitoring | SentinelShield{% endblock %}
+
+{% block content %}
+
+<div class="network-page">
+
+    <!-- ================================================================
+         PAGE HEADER
+         ================================================================ -->
+
+    <section class="soc-header">
+
+        <div class="soc-header-left">
+            <div class="soc-eyebrow">SENTINELSHIELD / NETWORK MONITORING</div>
+            <h1>Network Activity</h1>
+            <p>Monitor network telemetry, connections and detected scanning behavior.</p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+                <strong>NETWORK ENGINE</strong>
+                <small>Active monitoring</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         KPI CARDS
+         ================================================================ -->
+
+    <section class="kpi-grid">
+
+        <div class="kpi-card">
+            <div class="kpi-icon">⌁</div>
+            <div class="kpi-content">
+                <span class="kpi-label">TOTAL EVENTS</span>
+                <strong class="kpi-value">{{ events|length }}</strong>
+                <small>Recent network telemetry</small>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-high">
+            <div class="kpi-icon">⌐</div>
+            <div class="kpi-content">
+                <span class="kpi-label">PORT SCANS</span>
+                <strong class="kpi-value">{{ port_scans }}</strong>
+                <small>Detected scanning activity</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">▼</div>
+            <div class="kpi-content">
+                <span class="kpi-label">TCP EVENTS</span>
+                <strong class="kpi-value">{{ tcp_events }}</strong>
+                <small>TCP network activity</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">◆</div>
+            <div class="kpi-content">
+                <span class="kpi-label">UDP EVENTS</span>
+                <strong class="kpi-value">{{ udp_events }}</strong>
+                <small>UDP network activity</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         NETWORK EVENTS TABLE
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">NETWORK TELEMETRY</span>
+                <h2>Recent Network Events</h2>
+            </div>
+            <div class="live-indicator">
+                <span class="status-dot"></span>
+                LIVE MONITORING
+            </div>
+        </div>
+
+        {% if events %}
+
+        <div class="table-wrapper">
+
+            <table class="soc-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TIME</th>
+                        <th>EVENT</th>
+                        <th>SOURCE</th>
+                        <th>DESTINATION</th>
+                        <th>PORT</th>
+                        <th>PROTOCOL</th>
+                        <th>DESCRIPTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for event in events %}
+
+                    <tr>
+
+                        <td class="event-id">#{{ event["id"] }}</td>
+
+                        <td class="timestamp">{{ event["timestamp"][:10] }}</td>
+
+                        <td>
+                            {% if event["event_type"] == "PORT_SCAN" %}
+                                <span class="badge badge-high">PORT SCAN</span>
+                            {% elif event["event_type"] == "TCP_CONNECTION" %}
+                                <span class="badge badge-medium">TCP</span>
+                            {% elif event["event_type"] == "UDP_CONNECTION" %}
+                                <span class="badge badge-medium">UDP</span>
+                            {% else %}
+                                <span class="badge badge-neutral">{{ event["event_type"] }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="ip-address">{{ event["source_ip"] or "—" }}</td>
+
+                        <td class="ip-address">{{ event["destination_ip"] or "—" }}</td>
+
+                        <td>{{ event["destination_port"] or "—" }}</td>
+
+                        <td>{{ event["protocol"] or "—" }}</td>
+
+                        <td class="description-cell">
+                            {{ event["description"] or "No description available" }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state" style="padding: 40px; text-align: center;">
+            <div class="empty-icon" style="font-size: 48px; margin-bottom: 15px;">◌</div>
+            <strong style="font-size: 16px; display: block; margin-bottom: 8px;">No network events</strong>
+            <span>SentinelShield has not collected network telemetry yet.</span>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

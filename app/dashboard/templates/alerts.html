@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Security Alerts | SentinelShield{% endblock %}
+
+{% block content %}
+
+<div class="alerts-page">
+
+    <!-- ================================================================
+         PAGE HEADER
+         ================================================================ -->
+
+    <section class="soc-header">
+
+        <div class="soc-header-left">
+            <div class="soc-eyebrow">SENTINELSHIELD / INCIDENT MANAGEMENT</div>
+            <h1>Security Alerts</h1>
+            <p>Review, investigate and manage detected security incidents.</p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+                <strong>LIVE</strong>
+                <small>Alert monitoring active</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         SUMMARY CARDS
+         ================================================================ -->
+
+    <section class="kpi-grid">
+
+        <div class="kpi-card">
+            <div class="kpi-icon">◈</div>
+            <div class="kpi-content">
+                <span class="kpi-label">VISIBLE ALERTS</span>
+                <strong class="kpi-value">{{ total_visible }}</strong>
+                <small>Current result set</small>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-critical">
+            <div class="kpi-icon">!</div>
+            <div class="kpi-content">
+                <span class="kpi-label">HIGH / CRITICAL</span>
+                <strong class="kpi-value">{{ high_critical }}</strong>
+                <small>Priority incidents</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">◈</div>
+            <div class="kpi-content">
+                <span class="kpi-label">NEW</span>
+                <strong class="kpi-value">{{ new_alerts }}</strong>
+                <small>Awaiting triage</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">✓</div>
+            <div class="kpi-content">
+                <span class="kpi-label">RESOLVED</span>
+                <strong class="kpi-value">{{ resolved_alerts }}</strong>
+                <small>Closed incidents</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         FILTER PANEL
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">INCIDENT QUEUE</span>
+                <h2>Alert Filters</h2>
+            </div>
+            <div class="live-indicator">
+                <span class="status-dot"></span>
+                LIVE MONITORING
+            </div>
+        </div>
+
+        <form class="alert-filters" method="GET" action="{{ url_for('dashboard.alerts_list') }}" style="padding: 20px;">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 15px; align-items: flex-end;">
+
+                <div class="filter-group">
+                    <label for="severity">SEVERITY</label>
+                    <select id="severity" name="severity">
+                        <option value="" {% if not selected_severity %}selected{% endif %}>All Severities</option>
+                        <option value="CRITICAL" {% if selected_severity == "CRITICAL" %}selected{% endif %}>Critical</option>
+                        <option value="HIGH" {% if selected_severity == "HIGH" %}selected{% endif %}>High</option>
+                        <option value="MEDIUM" {% if selected_severity == "MEDIUM" %}selected{% endif %}>Medium</option>
+                        <option value="LOW" {% if selected_severity == "LOW" %}selected{% endif %}>Low</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="status">STATUS</label>
+                    <select id="status" name="status">
+                        <option value="" {% if not selected_status %}selected{% endif %}>All Statuses</option>
+                        <option value="NEW" {% if selected_status == "NEW" %}selected{% endif %}>New</option>
+                        <option value="ACKNOWLEDGED" {% if selected_status == "ACKNOWLEDGED" %}selected{% endif %}>Acknowledged</option>
+                        <option value="INVESTIGATING" {% if selected_status == "INVESTIGATING" %}selected{% endif %}>Investigating</option>
+                        <option value="RESOLVED" {% if selected_status == "RESOLVED" %}selected{% endif %}>Resolved</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">APPLY</button>
+                <a href="{{ url_for('dashboard.alerts_list') }}" class="btn">CLEAR</a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+    <!-- ================================================================
+         INCIDENT QUEUE TABLE
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">DETECTION ENGINE</span>
+                <h2>Incident Queue</h2>
+            </div>
+            <div class="record-count">{{ alerts|length }} RECORDS</div>
+        </div>
+
+        {% if alerts %}
+
+        <div class="table-wrapper">
+
+            <table class="soc-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>SEVERITY</th>
+                        <th>DETECTION</th>
+                        <th>SOURCE</th>
+                        <th>DESTINATION</th>
+                        <th>RISK</th>
+                        <th>STATUS</th>
+                        <th>TIME</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for alert in alerts %}
+                    <tr>
+                        <td class="event-id">#{{ alert["id"] }}</td>
+
+                        <td>
+                            {% set severity = alert["severity"]|upper %}
+                            {% if severity == "CRITICAL" %}
+                                <span class="badge badge-critical">◆ CRITICAL</span>
+                            {% elif severity == "HIGH" %}
+                                <span class="badge badge-high">▲ HIGH</span>
+                            {% elif severity == "MEDIUM" %}
+                                <span class="badge badge-medium">◆ MEDIUM</span>
+                            {% else %}
+                                <span class="badge badge-low">● LOW</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="detection-cell">
+                            <a href="{{ url_for('dashboard.alert_detail', alert_id=alert['id']) }}" class="detection-link">
+                                {{ alert["event_type"] }}
+                            </a>
+                            {% if alert["description"] %}
+                            <div class="alert-description">{{ alert["description"][:60] }}{% if alert["description"]|length > 60 %}...{% endif %}</div>
+                            {% endif %}
+                        </td>
+
+                        <td class="ip-address">{{ alert["source_ip"] or "—" }}</td>
+
+                        <td class="ip-address">{{ alert["destination_ip"] or "—" }}</td>
+
+                        <td class="risk-cell">
+                            <strong>{{ alert["risk_score"] }}/100</strong>
+                            <div class="risk-bar">
+                                <div class="risk-fill" style="width: {{ alert['risk_score']|default(0) }}%;"></div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% set status = alert["status"]|upper %}
+                            <span class="status-badge status-{{ status|lower }}">{{ status }}</span>
+                        </td>
+
+                        <td class="timestamp">{{ alert["timestamp"][:10] }}</td>
+
+                        <td class="action-cell">
+                            <a href="{{ url_for('dashboard.alert_detail', alert_id=alert['id']) }}" class="btn btn-sm">VIEW</a>
+                            {% if alert["status"] == "NEW" %}
+                            <button type="button" class="btn btn-sm btn-ack" onclick="updateAlertStatus({{ alert['id'] }}, 'ACKNOWLEDGED')">ACK</button>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state" style="padding: 40px; text-align: center;">
+            <div class="empty-icon" style="font-size: 48px; margin-bottom: 15px;">✓</div>
+            <strong style="font-size: 16px; display: block; margin-bottom: 8px;">No security alerts found</strong>
+            <span>Try changing the severity or status filters.</span>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+<script>
+
+async function updateAlertStatus(alertId, status) {
+    try {
+        const response = await fetch(`/api/alerts/${alertId}/status`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: status })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) {
+            alert(data.error || "Unable to update alert status.");
+            return;
+        }
+        window.location.reload();
+    } catch (error) {
+        alert("Connection error while updating alert.");
+        console.error(error);
+    }
+}
+
+</script>
+
+{% endblock %}

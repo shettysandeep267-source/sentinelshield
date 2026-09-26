@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Web Attack Detection | SentinelShield{% endblock %}
+
+{% block content %}
+
+<div class="web-attacks-page">
+
+    <!-- ================================================================
+         PAGE HEADER
+         ================================================================ -->
+
+    <section class="soc-header">
+
+        <div class="soc-header-left">
+            <div class="soc-eyebrow">SENTINELSHIELD / WEB PROTECTION</div>
+            <h1>Web Attack Detection</h1>
+            <p>HTTP threat detection using signature and pattern-based analysis.</p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+                <strong>WEB ENGINE</strong>
+                <small>Active protection</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         KPI CARDS
+         ================================================================ -->
+
+    <section class="kpi-grid">
+
+        <div class="kpi-card">
+            <div class="kpi-icon">◈</div>
+            <div class="kpi-content">
+                <span class="kpi-label">TOTAL WEB ATTACKS</span>
+                <strong class="kpi-value">{{ total_web_attacks }}</strong>
+                <small>Detected HTTP security incidents</small>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-critical">
+            <div class="kpi-icon">!</div>
+            <div class="kpi-content">
+                <span class="kpi-label">SQL INJECTION</span>
+                <strong class="kpi-value">{{ sql_injection }}</strong>
+                <small>SQL injection detections</small>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-high">
+            <div class="kpi-icon">▲</div>
+            <div class="kpi-content">
+                <span class="kpi-label">XSS</span>
+                <strong class="kpi-value">{{ xss }}</strong>
+                <small>Cross-site scripting detections</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">◆</div>
+            <div class="kpi-content">
+                <span class="kpi-label">DIRECTORY TRAVERSAL</span>
+                <strong class="kpi-value">{{ directory_traversal }}</strong>
+                <small>Path traversal detections</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">⚠</div>
+            <div class="kpi-content">
+                <span class="kpi-label">COMMAND INJECTION</span>
+                <strong class="kpi-value">{{ command_injection }}</strong>
+                <small>Command injection detections</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         WEB SECURITY INCIDENTS TABLE
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">DETECTION ENGINE</span>
+                <h2>Web Security Incidents</h2>
+            </div>
+            <div class="live-indicator">
+                <span class="status-dot"></span>
+                MONITORING ACTIVE
+            </div>
+        </div>
+
+        {% if alerts %}
+
+        <div class="table-wrapper">
+
+            <table class="soc-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>SEVERITY</th>
+                        <th>DETECTION</th>
+                        <th>SOURCE</th>
+                        <th>DESTINATION</th>
+                        <th>RISK</th>
+                        <th>STATUS</th>
+                        <th>TIME</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for alert in alerts %}
+
+                    <tr>
+
+                        <td class="event-id">#{{ alert["id"] }}</td>
+
+                        <td>
+                            {% set severity = alert["severity"]|upper %}
+                            {% if severity == "CRITICAL" %}
+                                <span class="badge badge-critical">◆ CRITICAL</span>
+                            {% elif severity == "HIGH" %}
+                                <span class="badge badge-high">▲ HIGH</span>
+                            {% elif severity == "MEDIUM" %}
+                                <span class="badge badge-medium">◆ MEDIUM</span>
+                            {% else %}
+                                <span class="badge badge-low">● LOW</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="detection-cell">
+                            <a href="{{ url_for('dashboard.alert_detail', alert_id=alert['id']) }}" class="detection-link">
+                                {{ alert["event_type"] }}
+                            </a>
+                            {% if alert["description"] %}
+                            <div class="alert-description">{{ alert["description"][:60] }}{% if alert["description"]|length > 60 %}...{% endif %}</div>
+                            {% endif %}
+                        </td>
+
+                        <td class="ip-address">{{ alert["source_ip"] or "—" }}</td>
+
+                        <td class="ip-address">{{ alert["destination_ip"] or "—" }}</td>
+
+                        <td class="risk-cell">
+                            <strong>{{ alert["risk_score"] }}/100</strong>
+                            <div class="risk-bar">
+                                <div class="risk-fill" style="width: {{ alert['risk_score']|default(0) }}%;"></div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% set status = alert["status"]|upper %}
+                            <span class="status-badge status-{{ status|lower }}">{{ status }}</span>
+                        </td>
+
+                        <td class="timestamp">{{ alert["timestamp"][:10] }}</td>
+
+                        <td class="action-cell">
+                            <a href="{{ url_for('dashboard.alert_detail', alert_id=alert['id']) }}" class="btn btn-sm">VIEW</a>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state" style="padding: 40px; text-align: center;">
+            <div class="empty-icon" style="font-size: 48px; margin-bottom: 15px;">✓</div>
+            <strong style="font-size: 16px; display: block; margin-bottom: 8px;">No web attacks detected</strong>
+            <span>SentinelShield has not detected any web-based security incidents.</span>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

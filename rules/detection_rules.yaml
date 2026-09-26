@@ -1,0 +1,59 @@
+# SentinelShield web-attack detection rules
+#
+# These are STARTER patterns for Stage 6-7 (web attack detection). They are
+# intentionally broad and will produce false positives - your job in Phase 6
+# is to tune them against your own lab's normal traffic before relying on them.
+#
+# Each rule: id, pattern (regex, matched against the URL-decoded request
+# path + query string), severity_hint (fed into risk scoring), description.
+
+sql_injection:
+  - id: sqli_union_select
+    pattern: "(?i)union(\\s+all)?\\s+select"
+    severity_hint: HIGH
+    description: "UNION SELECT pattern, common in SQL injection"
+  - id: sqli_boolean
+    pattern: "(?i)(\\bor\\b|\\band\\b)\\s+['\"]?\\d+['\"]?\\s*=\\s*['\"]?\\d+"
+    severity_hint: MEDIUM
+    description: "Boolean-based tautology (e.g. OR 1=1)"
+  - id: sqli_comment
+    pattern: "(--|#|/\\*)"
+    severity_hint: LOW
+    description: "SQL comment sequence in request"
+
+xss:
+  - id: xss_script_tag
+    pattern: "(?i)<script[^>]*>"
+    severity_hint: HIGH
+    description: "Inline <script> tag"
+  - id: xss_event_handler
+    pattern: "(?i)on(error|load|click|mouseover)\\s*="
+    severity_hint: MEDIUM
+    description: "Inline JS event handler injection"
+  - id: xss_javascript_uri
+    pattern: "(?i)javascript:"
+    severity_hint: MEDIUM
+    description: "javascript: URI scheme"
+
+directory_traversal:
+  - id: traversal_dotdot
+    pattern: "(\\.\\./|\\.\\.\\\\)"
+    severity_hint: MEDIUM
+    description: "Parent-directory traversal sequence"
+  - id: traversal_encoded
+    pattern: "(?i)%2e%2e(%2f|%5c)"
+    severity_hint: MEDIUM
+    description: "URL-encoded traversal sequence"
+
+command_injection:
+  - id: cmdi_shell_metachar
+    pattern: "[;&|`]\\s*(cat|ls|whoami|id|wget|curl|nc)\\b"
+    severity_hint: CRITICAL
+    description: "Shell metacharacter followed by common recon/download command"
+  - id: cmdi_subshell
+    pattern: "\\$\\(.+\\)"
+    severity_hint: HIGH
+    description: "Command substitution syntax"
+
+# TODO: as you tune, consider splitting rules into a "strict" and "lab-tuned"
+# rule set, and add a `false_positive_notes` field once you've observed some.

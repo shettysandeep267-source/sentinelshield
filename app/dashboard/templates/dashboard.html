@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}SentinelShield — Security Operations Center{% endblock %}
+
+{% block content %}
+
+<section class="section-header">
+    <div class="header-eyebrow">SENTINELSHIELD / SOC</div>
+    <h1>Security Operations Center</h1>
+    <p>Enterprise-grade threat detection and real-time security monitoring</p>
+</section>
+
+<div class="kpi-grid">
+    <a href="{{ url_for('dashboard.alerts_list') }}" class="kpi-card">
+        <div class="kpi-label">TOTAL ALERTS</div>
+        <div class="kpi-value">{{ total_alerts }}</div>
+        <div class="kpi-description">Security findings</div>
+    </a>
+
+    <a href="{{ url_for('dashboard.alerts_list', severity='CRITICAL') }}" class="kpi-card">
+        <div class="kpi-label">CRITICAL</div>
+        <div class="kpi-value" style="color: #FF0000;">{{ critical_alerts }}</div>
+        <div class="kpi-description">Immediate attention</div>
+    </a>
+
+    <a href="{{ url_for('dashboard.alerts_list', severity='HIGH') }}" class="kpi-card">
+        <div class="kpi-label">HIGH RISK</div>
+        <div class="kpi-value" style="color: #FF8C00;">{{ high_alerts }}</div>
+        <div class="kpi-description">Priority findings</div>
+    </a>
+
+    <a href="{{ url_for('dashboard.network_view') }}" class="kpi-card">
+        <div class="kpi-label">TOTAL EVENTS</div>
+        <div class="kpi-value">{{ total_events }}</div>
+        <div class="kpi-description">Collected telemetry</div>
+    </a>
+</div>
+
+<div class="soc-panel">
+    <div class="panel-header">
+        <h2>Threat Activity</h2>
+    </div>
+    <div class="threat-list">
+        {% set threat_counts = {
+            "SQL Injection": 0,
+            "Command Injection": 0,
+            "Cross-Site Scripting": 0,
+            "Directory Traversal": 0,
+            "Port Scan": 0,
+            "Brute Force": 0,
+            "Successful Brute Force": 0
+        } %}
+
+        {% for alert in recent_alerts %}
+            {% if alert["event_type"] == "SQL_INJECTION" %}
+                {% set _ = threat_counts.update({"SQL Injection": threat_counts["SQL Injection"] + 1}) %}
+            {% elif alert["event_type"] == "COMMAND_INJECTION" %}
+                {% set _ = threat_counts.update({"Command Injection": threat_counts["Command Injection"] + 1}) %}
+            {% elif alert["event_type"] == "XSS" %}
+                {% set _ = threat_counts.update({"Cross-Site Scripting": threat_counts["Cross-Site Scripting"] + 1}) %}
+            {% elif alert["event_type"] == "DIRECTORY_TRAVERSAL" %}
+                {% set _ = threat_counts.update({"Directory Traversal": threat_counts["Directory Traversal"] + 1}) %}
+            {% elif alert["event_type"] == "PORT_SCAN" %}
+                {% set _ = threat_counts.update({"Port Scan": threat_counts["Port Scan"] + 1}) %}
+            {% elif alert["event_type"] == "BRUTE_FORCE" %}
+                {% set _ = threat_counts.update({"Brute Force": threat_counts["Brute Force"] + 1}) %}
+            {% elif alert["event_type"] == "SUCCESSFUL_BRUTE_FORCE" %}
+                {% set _ = threat_counts.update({"Successful Brute Force": threat_counts["Successful Brute Force"] + 1}) %}
+            {% endif %}
+        {% endfor %}
+
+        {% set max_count = threat_counts.values()|max %}
+
+        {% for name, count in threat_counts.items() %}
+            <div class="threat-row">
+                <div class="threat-label">{{ name }}</div>
+                <div class="threat-count">{{ count }}</div>
+                <div class="threat-bar-container">
+                    {% if max_count > 0 %}
+                        {% set width = (count / max_count * 100) %}
+                    {% else %}
+                        {% set width = 0 %}
+                    {% endif %}
+                    <div class="threat-bar-fill" style="width: {{ width }}%;"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="soc-panel">
+    <div class="panel-header">
+        <h2>Detection Engines Status</h2>
+    </div>
+    <div class="engine-list">
+        <div class="engine-row">
+            <div class="engine-info">
+                <strong>Web Attack Engine</strong>
+                <span>SQLi / XSS / Traversal / CMDi</span>
+            </div>
+            <div class="engine-status">● ACTIVE</div>
+        </div>
+
+        <div class="engine-row">
+            <div class="engine-info">
+                <strong>Port Scan Engine</strong>
+                <span>Network behavior analysis</span>
+            </div>
+            <div class="engine-status">● ACTIVE</div>
+        </div>
+
+        <div class="engine-row">
+            <div class="engine-info">
+                <strong>Brute Force Engine</strong>
+                <span>Authentication monitoring</span>
+            </div>
+            <div class="engine-status">● ACTIVE</div>
+        </div>
+
+        <div class="engine-row">
+            <div class="engine-info">
+                <strong>Risk Scoring Engine</strong>
+                <span>0–100 threat classification</span>
+            </div>
+            <div class="engine-status">● ACTIVE</div>
+        </div>
+
+        <div class="engine-row">
+            <div class="engine-info">
+                <strong>SQLite Event Database</strong>
+                <span>Security telemetry storage</span>
+            </div>
+            <div class="engine-status">● ACTIVE</div>
+        </div>
+    </div>
+</div>
+
+<div class="soc-panel">
+    <div class="panel-header">
+        <h2>Alert Severity Distribution</h2>
+    </div>
+    <div class="severity-grid">
+        <div class="severity-card critical">
+            <div class="severity-label">CRITICAL</div>
+            <div class="severity-count">{{ total_alerts }}</div>
+            <div class="severity-description">Immediate action required</div>
+        </div>
+
+        <div class="severity-card high">
+            <div class="severity-label">HIGH</div>
+            <div class="severity-count">{{ high_alerts }}</div>
+            <div class="severity-description">Priority investigation</div>
+        </div>
+
+        <div class="severity-card medium">
+            <div class="severity-label">MEDIUM</div>
+            <div class="severity-count">{{ total_alerts }}</div>
+            <div class="severity-description">Monitor and investigate</div>
+        </div>
+
+        <div class="severity-card low">
+            <div class="severity-label">LOW</div>
+            <div class="severity-count">{{ total_alerts }}</div>
+            <div class="severity-description">Informational</div>
+        </div>
+    </div>
+</div>
+
+<div class="soc-panel">
+    <div class="panel-header">
+        <h2>Recent Security Alerts</h2>
+    </div>
+
+    {% if recent_alerts %}
+
+    <div class="table-wrapper">
+        <table class="soc-table">
+            <thead>
+                <tr>
+                    <th>SEVERITY</th>
+                    <th>DETECTION</th>
+                    <th>SOURCE</th>
+                    <th>DESTINATION</th>
+                    <th>RISK</th>
+                    <th>STATUS</th>
+                    <th>TIME</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in recent_alerts %}
+                <tr>
+                    <td>
+                        {% if alert["severity"]|upper == "CRITICAL" %}
+                            <span class="badge badge-critical">CRITICAL</span>
+                        {% elif alert["severity"]|upper == "HIGH" %}
+                            <span class="badge badge-high">HIGH</span>
+                        {% elif alert["severity"]|upper == "MEDIUM" %}
+                            <span class="badge badge-medium">MEDIUM</span>
+                        {% else %}
+                            <span class="badge badge-low">LOW</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('dashboard.alert_detail', alert_id=alert['id']) }}">{{ alert["event_type"] }}</a></td>
+                    <td class="mono-value">{{ alert["source_ip"] or "—" }}</td>
+                    <td class="mono-value">{{ alert["destination_ip"] or "—" }}</td>
+                    <td>
+                        <div class="risk-score">{{ alert["risk_score"] }}/100</div>
+                        <div class="risk-bar-container">
+                            <div class="risk-bar-fill" style="width: {{ alert['risk_score']|default(0) }}%;"></div>
+                        </div>
+                    </td>
+                    <td><span class="badge status-{{ alert['status']|lower }}">{{ alert["status"]|upper }}</span></td>
+                    <td class="mono-value">{{ alert["timestamp"][:10] }}</td>
+                    <td><a href="{{ url_for('dashboard.alert_detail', alert_id=alert['id']) }}" class="btn btn-sm">VIEW</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+        <div class="empty-icon">✓</div>
+        <h2>No Security Alerts</h2>
+        <p>SentinelShield is monitoring normally with no active findings.</p>
+    </div>
+
+    {% endif %}
+</div>
+
+{% endblock %}

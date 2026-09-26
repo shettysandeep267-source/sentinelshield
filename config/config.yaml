@@ -1,0 +1,62 @@
+# SentinelShield configuration
+# Copy this file to config.local.yaml for machine-specific overrides
+# and keep secrets out of version control.
+
+debug: true
+
+database:
+  path: "database/sentinelshield.db"
+
+# --- Network collector (Stage 4) ---
+network:
+  interface: "eth0"          # lab interface only - never a production/shared NIC
+  enabled: false              # flip on once Scapy capture is implemented
+
+# --- Port-scan detector (Stage 5) ---
+port_scan:
+  window_seconds: 10
+  distinct_port_threshold: 15
+
+# --- Web log collector / detector (Stages 6-7) ---
+web:
+  nginx_access_log: "/var/log/nginx/access.log"
+  enabled: false
+
+# --- Auth / brute-force detector (Stage 7) ---
+auth:
+  auth_log_path: "/var/log/auth.log"
+  window_seconds: 60
+  failure_threshold: 5
+  enabled: false
+
+# --- File integrity monitoring (Stage 9) ---
+file_integrity:
+  watched_paths:
+    - "/etc/ssh/sshd_config"
+    - "/etc/nginx/nginx.conf"
+    - "/etc/passwd"
+  check_interval_seconds: 300
+  enabled: false
+
+# --- Risk scoring (Stage 10) ---
+risk:
+  thresholds:
+    low: 0
+    medium: 30
+    high: 60
+    critical: 80
+
+# --- Suricata integration (Stage 13) ---
+suricata:
+  eve_json_path: "/var/log/suricata/eve.json"
+  enabled: false
+
+# --- Dashboard (Stage 12) ---
+dashboard:
+  host: "127.0.0.1"
+  port: 5000
+
+# --- Threat intelligence (future work, see README) ---
+threat_intel:
+  enabled: false
+  feed_url: ""

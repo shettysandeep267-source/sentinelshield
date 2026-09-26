@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Security Reports | SentinelShield{% endblock %}
+
+{% block content %}
+
+<div class="reports-page">
+
+    <!-- ================================================================
+         PAGE HEADER
+         ================================================================ -->
+
+    <section class="soc-header">
+
+        <div class="soc-header-left">
+            <div class="soc-eyebrow">SENTINELSHIELD / SECURITY REPORTING</div>
+            <h1>Security Reports</h1>
+            <p>Generate and review security findings and threat analysis.</p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <div>
+                <strong>REPORTING</strong>
+                <small>Analysis ready</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         SUMMARY CARDS
+         ================================================================ -->
+
+    <section class="kpi-grid">
+
+        <div class="kpi-card">
+            <div class="kpi-icon">◈</div>
+            <div class="kpi-content">
+                <span class="kpi-label">TOTAL ALERTS</span>
+                <strong class="kpi-value">{{ total_alerts }}</strong>
+                <small>Security findings</small>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-critical">
+            <div class="kpi-icon">!</div>
+            <div class="kpi-content">
+                <span class="kpi-label">CRITICAL</span>
+                <strong class="kpi-value">{{ critical_alerts }}</strong>
+                <small>Immediate response</small>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-high">
+            <div class="kpi-icon">▲</div>
+            <div class="kpi-content">
+                <span class="kpi-label">HIGH</span>
+                <strong class="kpi-value">{{ high_alerts }}</strong>
+                <small>Priority investigation</small>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">⌁</div>
+            <div class="kpi-content">
+                <span class="kpi-label">TOTAL EVENTS</span>
+                <strong class="kpi-value">{{ total_events }}</strong>
+                <small>Collected telemetry</small>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         SEVERITY DISTRIBUTION
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">SECURITY POSTURE</span>
+                <h2>Alert Severity Distribution</h2>
+            </div>
+        </div>
+
+        <div class="severity-grid">
+
+            <div class="severity-card severity-card-critical">
+                <span>CRITICAL</span>
+                <strong>{{ critical_alerts }}</strong>
+                <small>Immediate action</small>
+            </div>
+
+            <div class="severity-card severity-card-high">
+                <span>HIGH</span>
+                <strong>{{ high_alerts }}</strong>
+                <small>Priority investigation</small>
+            </div>
+
+            <div class="severity-card severity-card-medium">
+                <span>MEDIUM</span>
+                <strong>{{ medium_alerts }}</strong>
+                <small>Monitor and investigate</small>
+            </div>
+
+            <div class="severity-card severity-card-low">
+                <span>LOW</span>
+                <strong>{{ low_alerts }}</strong>
+                <small>Informational</small>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         ATTACK CATEGORY DISTRIBUTION
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">THREAT LANDSCAPE</span>
+                <h2>Attack Category Distribution</h2>
+            </div>
+        </div>
+
+        <div class="threat-distribution">
+
+            <div class="threat-row">
+                <div class="threat-info">
+                    <span>SQL Injection</span>
+                    <strong>{{ sql_injection }}</strong>
+                </div>
+                <div class="threat-bar">
+                    <div class="threat-bar-fill" style="width: {% if sql_injection %}100{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <div class="threat-row">
+                <div class="threat-info">
+                    <span>Cross-Site Scripting</span>
+                    <strong>{{ xss }}</strong>
+                </div>
+                <div class="threat-bar">
+                    <div class="threat-bar-fill" style="width: {% if xss %}100{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <div class="threat-row">
+                <div class="threat-info">
+                    <span>Directory Traversal</span>
+                    <strong>{{ traversal }}</strong>
+                </div>
+                <div class="threat-bar">
+                    <div class="threat-bar-fill" style="width: {% if traversal %}100{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <div class="threat-row">
+                <div class="threat-info">
+                    <span>Command Injection</span>
+                    <strong>{{ cmd_injection }}</strong>
+                </div>
+                <div class="threat-bar">
+                    <div class="threat-bar-fill" style="width: {% if cmd_injection %}100{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <div class="threat-row">
+                <div class="threat-info">
+                    <span>Port Scan</span>
+                    <strong>{{ port_scan }}</strong>
+                </div>
+                <div class="threat-bar">
+                    <div class="threat-bar-fill" style="width: {% if port_scan %}100{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <div class="threat-row">
+                <div class="threat-info">
+                    <span>Brute Force</span>
+                    <strong>{{ brute_force }}</strong>
+                </div>
+                <div class="threat-bar">
+                    <div class="threat-bar-fill" style="width: {% if brute_force %}100{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         INCIDENT STATUS SUMMARY
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">INCIDENT LIFECYCLE</span>
+                <h2>Incident Status Summary</h2>
+            </div>
+        </div>
+
+        <div class="status-distribution">
+
+            <div class="status-row">
+                <div class="status-info">
+                    <span>NEW</span>
+                    <strong>{{ new_status }}</strong>
+                </div>
+                <small>Awaiting triage</small>
+            </div>
+
+            <div class="status-row">
+                <div class="status-info">
+                    <span>ACKNOWLEDGED</span>
+                    <strong>{{ acknowledged }}</strong>
+                </div>
+                <small>Analyst accepted</small>
+            </div>
+
+            <div class="status-row">
+                <div class="status-info">
+                    <span>INVESTIGATING</span>
+                    <strong>{{ investigating }}</strong>
+                </div>
+                <small>Analysis in progress</small>
+            </div>
+
+            <div class="status-row">
+                <div class="status-info">
+                    <span>RESOLVED</span>
+                    <strong>{{ resolved }}</strong>
+                </div>
+                <small>Incident closed</small>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         REPORT GENERATION
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">REPORT GENERATION</span>
+                <h2>Security Report</h2>
+            </div>
+        </div>
+
+        <div class="report-actions" style="padding: 20px; display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center;">
+
+            <div class="report-icon" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border: 1px solid #16d9ff; border-radius: 8px; color: #16d9ff; font-weight: bold; font-size: 12px;">PDF</div>
+
+            <div>
+                <strong style="display: block; font-size: 15px; margin-bottom: 5px;">SentinelShield Security Assessment</strong>
+                <p style="color: #688096; margin: 0; font-size: 13px;">Contains detection statistics, attack categories, alert severity and security observations.</p>
+            </div>
+
+            <button class="btn btn-primary" onclick="window.print()" style="grid-column: 2;">GENERATE / PRINT REPORT</button>
+
+        </div>
+
+    </section>
+
+    <!-- ================================================================
+         SYSTEM INFORMATION
+         ================================================================ -->
+
+    <section class="soc-panel">
+
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">SYSTEM INFORMATION</span>
+                <h2>SentinelShield Detection Platform</h2>
+            </div>
+        </div>
+
+        <div class="system-info-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 20px;">
+
+            <div style="padding: 15px; border: 1px solid #172d3c; border-radius: 8px; background: #0a151f;">
+                <span style="display: block; color: #688096; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px;">ENGINE</span>
+                <strong style="color: #16d9ff;">SENTINELSHIELD</strong>
+            </div>
+
+            <div style="padding: 15px; border: 1px solid #172d3c; border-radius: 8px; background: #0a151f;">
+                <span style="display: block; color: #688096; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px;">DATABASE</span>
+                <strong style="color: #16d9ff;">SQLITE</strong>
+            </div>
+
+            <div style="padding: 15px; border: 1px solid #172d3c; border-radius: 8px; background: #0a151f;">
+                <span style="display: block; color: #688096; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px;">MONITORING</span>
+                <strong style="color: #4cebb0;">ACTIVE</strong>
+            </div>
+
+            <div style="padding: 15px; border: 1px solid #172d3c; border-radius: 8px; background: #0a151f;">
+                <span style="display: block; color: #688096; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px;">DETECTION</span>
+                <strong style="color: #16d9ff;">RULE-BASED</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

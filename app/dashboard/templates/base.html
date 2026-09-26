@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SentinelShield - Enterprise Security Operations Center">
+    <title>{% block title %}SentinelShield SOC{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('dashboard.static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="ss-navbar">
+        <div class="navbar-container">
+            
+            <!-- Brand -->
+            <div class="navbar-brand">
+                <div class="brand-icon">S</div>
+                <div class="brand-text">SentinelShield</div>
+                <span class="brand-badge">SOC</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="navbar-links">
+                <a href="{{ url_for('dashboard.overview') }}" 
+                   class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    Dashboard
+                </a>
+                <a href="{{ url_for('dashboard.alerts_list') }}" 
+                   class="nav-link {% if request.path.startswith('/alerts') %}active{% endif %}">
+                    Alerts
+                </a>
+                <a href="{{ url_for('dashboard.network_view') }}" 
+                   class="nav-link {% if request.path == '/network' %}active{% endif %}">
+                    Network
+                </a>
+                <a href="{{ url_for('dashboard.web_attacks_view') }}" 
+                   class="nav-link {% if request.path == '/web-attacks' %}active{% endif %}">
+                    Web Attacks
+                </a>
+                <a href="{{ url_for('dashboard.reports_view') }}" 
+                   class="nav-link {% if request.path == '/reports' %}active{% endif %}">
+                    Reports
+                </a>
+            </div>
+
+            <!-- System Status -->
+            <div class="navbar-status">
+                <span class="status-indicator"></span>
+                <span class="status-text">SYSTEM ONLINE</span>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="ss-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <strong>SENTINELSHIELD</strong>
+                <span>Enterprise Security Operations Center</span>
+            </div>
+            <div class="footer-meta">
+                <span>ENGINE: <strong>SENTINELSHIELD</strong></span>
+                <span class="divider">|</span>
+                <span>DATABASE: <strong>SQLITE</strong></span>
+                <span class="divider">|</span>
+                <span class="status-active">● MONITORING ACTIVE</span>
+            </div>
+            <div class="footer-copyright">© 2026 SentinelShield | Security Operations Platform</div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
