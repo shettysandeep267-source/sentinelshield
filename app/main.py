@@ -11,7 +11,7 @@ Architecture:
           ↓
       Detectors
           ↓
-     Risk Scoring
+      Risk Scoring
           ↓
         Alert
           ↓
@@ -19,9 +19,12 @@ Architecture:
           ↓
       Flask Dashboard
 
-Usage:
+Local usage:
     python -m app.main
     python -m app.main --config config/config.yaml
+
+Production usage:
+    gunicorn --bind 0.0.0.0:$PORT app.main:app
 """
 
 import argparse
@@ -66,7 +69,6 @@ def load_config(config_path: Path) -> dict:
         "r",
         encoding="utf-8",
     ) as file:
-
         config = yaml.safe_load(file)
 
     if config is None:
@@ -97,6 +99,34 @@ def create_app(config: dict) -> Flask:
     )
 
     return app
+
+
+# ============================================================================
+# Production Flask Application
+# ============================================================================
+
+# Load the normal SentinelShield configuration when the module is imported.
+#
+# This is required by Gunicorn:
+#
+#     gunicorn --bind 0.0.0.0:$PORT app.main:app
+#
+# The local command `python -m app.main` still uses main() below.
+# The production server does NOT start Scapy packet capture automatically.
+
+DEFAULT_CONFIG_PATH = Path(
+    "config/config.yaml"
+)
+
+production_config = load_config(
+    DEFAULT_CONFIG_PATH
+)
+
+init_db()
+
+app = create_app(
+    production_config
+)
 
 
 # ============================================================================
@@ -234,7 +264,7 @@ def start_background_collectors(
 
 def main() -> None:
     """
-    Start the complete SentinelShield application.
+    Start the complete SentinelShield application locally.
     """
 
     # ------------------------------------------------------------------------
@@ -318,7 +348,7 @@ def main() -> None:
     # Create Flask application
     # ------------------------------------------------------------------------
 
-    app = create_app(
+    local_app = create_app(
         config
     )
 
@@ -333,7 +363,7 @@ def main() -> None:
         args.port,
     )
 
-    app.run(
+    local_app.run(
         host=args.host,
         port=args.port,
         debug=config.get(
