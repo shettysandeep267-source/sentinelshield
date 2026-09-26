@@ -1,15 +1,15 @@
 # SentinelShield dependencies
-# Install with: pip install -r requirements.txt --break-system-packages
-# (or inside a venv without the flag)
+# Install with: pip install -r requirements.txt
 
 Flask==3.0.3
 scapy==2.5.0
 PyYAML==6.0.2
 requests==2.32.3
+gunicorn==23.0.0
 
 # Testing
 pytest==8.3.2
 
 # Optional / later stages:
-# watchdog==4.0.1        # alternative to polling for log tailing / file integrity
-# python-dateutil==2.9.0 # convenient timestamp parsing for log lines
+# watchdog==4.0.1
+# python-dateutil==2.9.0
